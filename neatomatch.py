@@ -61,12 +61,11 @@ def match(arg, *arms):
         envstack.append({})
         try:
             bindfreevars(pat, arg, envstack[-1])
-            result = func()
-            envstack.pop()
-            return result
+            return func()
         except NoMatch:
-            envstack.pop()
             continue
+        finally:
+            envstack.pop()
     raise NoMatch
 
 
@@ -76,4 +75,3 @@ def maybematch(arg, *arms):
         return match(arg, *arms)
     except NoMatch:
         pass
-
