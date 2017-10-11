@@ -1,7 +1,7 @@
 # A successful match binds variables to a dictionary that maps numeric IDs to
 # values. These dictionaries are pushed onto a stack to support a match calling
 # a match, like during recursion.
-envstack = []
+_envstack = []
 
 class FreeVar:
     def __init__(self, id):
@@ -10,7 +10,7 @@ class FreeVar:
     def __invert__(self):
         # This squiggly operator ~ feels like a dereference
         try:
-            return envstack[-1][self.freevarid]
+            return _envstack[-1][self.freevarid]
         except KeyError:
             raise UnboundVariable("tried to look up variable; not bound in pattern")
 
@@ -31,7 +31,7 @@ class UnboundVariable(Exception):
     pass
 
 
-def bindfreevars(pat, arg, env):
+def _bindfreevars(pat, arg, env):
     """Bind free variables to the environment"""
     if pat == arg:
         pass
@@ -54,20 +54,20 @@ def bindfreevars(pat, arg, env):
                     # don't infinitely recurse
                     # for one char strings
                     raise NoMatch
-                bindfreevars(p, a, env)
+                _bindfreevars(p, a, env)
 
 
 def match(arg, *arms):
     """Pattern match and throw an exception upon failure"""
     for (pat, func) in zip(arms[0::2], arms[1::2]):
-        envstack.append({})
+        _envstack.append({})
         try:
-            bindfreevars(pat, arg, envstack[-1])
+            _bindfreevars(pat, arg, _envstack[-1])
             return func()
         except NoMatch:
             continue
         finally:
-            envstack.pop()
+            _envstack.pop()
     raise NoMatch
 
 
