@@ -1,6 +1,22 @@
+# A successful match binds variables to a dictionary that maps numeric IDs to
+# values. These dictionaries are pushed onto a stack to support a match calling
+# a match, like during recursion.
+envstack = []
+
 class FreeVar:
     def __init__(self, id):
         self.freevarid = id
+
+    def __invert__(self):
+        # This squiggly operator ~ feels like a dereference
+        try:
+            return envstack[-1][self.freevarid]
+        except KeyError:
+            raise UnboundVariable("tried to look up variable; not bound in pattern")
+
+
+# Wildcard
+_ = FreeVar(-1)
 
 
 def freevars(n):
@@ -13,20 +29,6 @@ class NoMatch(Exception):
 
 class UnboundVariable(Exception):
     pass
-
-
-# Every match arm will get its own environment to bind free variables to values.
-# By having a stack here we handle recursion. When a match calls a match the
-# lookup function only refers to the topmost environment of the stack.
-envstack = []
-_ = FreeVar(-1)
-
-
-def lookup(_x):
-    try:
-        return envstack[-1][_x.freevarid]
-    except KeyError:
-        raise UnboundVariable("tried to look up variable; not bound in pattern")
 
 
 def bindfreevars(pat, arg, env):

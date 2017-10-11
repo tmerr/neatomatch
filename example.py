@@ -1,15 +1,15 @@
-from neatomatch import _, freevars, match, lookup
+from neatomatch import _, freevars, match
 
 _a, _b, _c, _d = freevars(4)
 
 def evaltree(tree):
     return match(tree,
                 ('+', _a, _b),
-                    lambda: evaltree(lookup(_a)) + evaltree(lookup(_b)),
+                    lambda: evaltree(~_a) + evaltree(~_b),
                 ('*', _a, _b),
-                    lambda: evaltree(lookup(_a)) * evaltree(lookup(_b)),
+                    lambda: evaltree(~_a) * evaltree(~_b),
                 _a,
-                    lambda: lookup(_a))
+                    lambda: ~_a)
 
 binarytree = ('+', 3, ('*', ('+', 1, 1), 5))
 assert 13 == evaltree(binarytree)
